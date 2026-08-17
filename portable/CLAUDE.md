@@ -20,11 +20,15 @@ Never escalate: no `--force`, no `rm -rf`, no `git reset --hard`, no `sudo`.
 ## Commit Messages
 
 ```
-type(scope): TICKET | description
+type(scope): description
+```
+
+With ticket reference (if project uses a tracker):
+```
+type(scope): PROJ-123 | description
 ```
 
 Types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`, `build`
-Ticket: Jira key (`WEB-1234`) or pseudo-ticket (`WEB-CHORE`, `WEB-BUGFIX`, etc.)
 
 ## Build & Test
 

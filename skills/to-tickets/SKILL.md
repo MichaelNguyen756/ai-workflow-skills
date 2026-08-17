@@ -1,12 +1,12 @@
 # To Tickets
 
-Break a spec or conversation into a set of **tickets** — tracer-bullet vertical slices, each declaring the tickets that **block** it. Publishes to Jira.
+Break a spec or conversation into a set of **tickets** — tracer-bullet vertical slices, each declaring the tickets that **block** it.
 
 ## Process
 
 ### 1. Gather context
 
-Work from whatever is already in the conversation. If the user passes a reference (a spec path, a Jira ticket key, or URL), fetch and read its full body.
+Work from whatever is already in the conversation. If the user passes a reference (a spec path, issue number, or URL), fetch and read its full body.
 
 ### 2. Explore the codebase
 
@@ -45,17 +45,25 @@ Ask the user:
 
 Iterate until the user approves the breakdown.
 
-### 5. Publish to Jira
+### 5. Publish tickets
 
-Publish the approved tickets to your issue tracker (Jira, Linear, GitHub Issues).
+Publish the approved tickets to whatever tracker the project uses. Create in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers.
 
-Create issues in dependency order (blockers first) so each ticket's blocking edges can reference real issue keys. Use Jira's native "Blocks" link type for dependencies.
+**GitHub Issues:**
+- Create issues with the template below
+- Use task lists or "blocked by #N" references for dependencies
 
-For each ticket, create a Jira issue with:
+**Linear:**
+- Create issues with native blocking relationships
 
-- **Summary**: the ticket title
-- **Issue type**: Task (or Story if user-facing feature)
-- **Description** using this template:
+**Local files (no tracker):**
+- Write one file per ticket under `.scratch/<feature>/issues/<NN>-<slug>.md`
+- Number from `01` in dependency order
+
+**Other trackers:**
+- Adapt to the platform's native blocking/dependency mechanism
+
+#### Ticket template
 
 ```markdown
 ## What to build
@@ -69,12 +77,8 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 
 ## Blocked by
 
-- WEB-XXXX (or "None — can start immediately")
+- #N / ticket-ref (or "None — can start immediately")
 ```
-
-- **Blocking links**: use `createIssueLink` with type "Blocks" for each dependency
-
-After creating all tickets, link them as sub-tasks to the parent issue if one exists.
 
 Avoid specific file paths or code snippets in ticket descriptions — they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, schema, type shape), inline it and note it came from a prototype.
 
@@ -86,52 +90,18 @@ After publishing, check if any tickets share no blocking edges (i.e., they can s
 
 If accepted:
 
-1. **Create worktrees:**
+1. **Create worktrees** with a branch per ticket:
+   ```bash
+   git worktree add ../<repo>-<ticket>-<slug> -b <type>/<ticket>-<slug>
+   ```
 
-```bash
-# From the repo root (main worktree stays on default branch)
-git worktree add ../<repo>-<TICKET>-<slug> -b <type>/<TICKET>-<slug>
-```
+2. **Install dependencies** in each worktree.
 
-Naming: `<repo>-<TICKET>-<short-slug>` (e.g., `my-project-PROJ-101-feature-name`).
+3. **Create a scoped spec** in each worktree containing only that ticket's scope and acceptance criteria.
 
-2. **Install dependencies** in each worktree so it's ready to implement immediately.
+4. **Output a launch prompt** for each worktree — a self-contained prompt for a fresh agent session.
 
-3. **Create a scoped spec** in each worktree at `.kiro/specs/<TICKET>-SPEC.md`. This spec contains only the scope for that ticket — not the full parent spec. Pull content from:
-   - The Jira ticket's "What to build" and acceptance criteria
-   - Relevant implementation decisions from the parent spec
-   - Testing decisions scoped to this slice
-
-4. **Output a launch prompt** for each worktree. This is a self-contained prompt the user pastes into a new Kiro CLI session:
-
-```
-## Implement: <TICKET> — <Title>
-
-Working directory: /path/to/<repo>-<TICKET>-<slug>
-
-Implement the spec at `.kiro/specs/<TICKET>-SPEC.md`. The branch is already created
-and dependencies are installed.
-
-Run `/implement-from-spec .kiro/specs/<TICKET>-SPEC.md`
-```
-
-Each worktree is self-contained: its own branch, its own `node_modules`, its own spec. A Kiro CLI session in that directory has everything it needs to implement without reading from another worktree.
-
-**Note:** `.kiro/` is gitignored — specs in worktrees are ephemeral session artifacts, not committed. This is fine: the Jira ticket holds the durable acceptance criteria, and the spec is a working document for the implementing agent only.
-
-**Cleanup:** After a ticket's PR is merged, remove its worktree: `git worktree remove ../<worktree-dir>`
-
-### Wave orchestration (merging a batch of parallel PRs)
-
-After parallel agents finish and PRs are open:
-
-1. **Review all PRs** from the orchestrator session — cross-cutting visibility catches issues individual agents can't see (phantom dependencies, conflicting changes)
-2. **Merge the first PR** on GitHub
-3. **Update remaining branches** locally with `update-branch` in each worktree
-4. **Resolve conflicts** if any (likely in lockfiles) — run install to regenerate, commit via shell
-5. **Push** updated branches
-6. **Repeat** until all PRs in the wave are merged
-7. **Clean up worktrees**: `git worktree remove ../<dir>` for each merged ticket
+**Cleanup:** After a ticket's PR is merged, remove its worktree: `git worktree remove ../<dir>`
 
 ## Rules
 
