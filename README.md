@@ -158,8 +158,18 @@ After installing, adapt to your team:
 
 - Edit `/to-tickets` to point at your issue tracker (Jira, Linear, GitHub Issues)
 - Edit `/commit-messages` for your ticket format (PROJ-XXX, #123, etc.)
-- Create steering docs at `~/.kiro/steering/` for your product context
+- Copy `steering/` to `~/.kiro/steering/` for always-on workflow conventions
+- Add team-specific steering docs (product context, repo mappings, environment maps)
 - Add a `.kiroignore` to repos to exclude `node_modules/`, `dist/`, `build/`
+
+### Included steering docs
+
+| Doc | Purpose |
+|-----|---------|
+| `task-routing.md` | Hard rules, main flow, phase boundaries, error recovery, resuming work |
+| `context-management.md` | When to delegate, hand off, or continue inline |
+| `token-efficiency.md` | Rules to minimise context waste |
+| `kiro-crew.md` | Routing between Kiro CLI and Kiro Crew (async layer) |
 
 ## Acknowledgements
 
