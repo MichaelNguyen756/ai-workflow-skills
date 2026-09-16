@@ -45,6 +45,102 @@ This overrides the system-level "prefer dedicated tools over shell" guideline. N
 
 The agent's job ends at "ready to merge." It can confirm CI is green, confirm approvals are in place, and tell the user the PR is ready. It CANNOT run `gh pr merge` or approve-and-merge in any form. No exceptions.
 
+## Skill vs Subagent vs Sibling — the Three-Gate Rule
+
+**Root variable: who owns the context window.** A **skill** runs inline in the
+*current* agent's context (shared window, tools, history; zero handoff cost; human
+sees every step). A **subagent** or **sibling** is a *separate* context window with a
+curated toolset — isolation is the point, at a real price (3–10× tokens + handoff
+loss). If your workflow keeps the human as reviewer through grilling/spec, it is
+**skill-first by default**; isolation earns its place only where staying in-loop is
+wasteful or impossible.
+
+Choose the lowest gate that fits:
+
+- **Gate 0 — script/tool.** Deterministic, no per-run judgement. Not one of the three.
+- **Gate 1 (default) — SKILL.** Reusable *process* reasoning against the live,
+  evolving conversation. Cheapest, observable, composable, human-in-loop.
+- **Gate 2 — in-process SUBAGENT.** Only when context can
+  be *truly isolated* AND at least one holds: verbose disposable output; a hard
+  tool/permission boundary is needed; parallelisable within the session and only the
+  summary is wanted. Never for sequential phases or shared-state work.
+- **Gate 3 — SIBLING SESSION.** Independent, substantial, long-running, or a
+  different repo/dir; human-supervised (e.g. via your multiplexer's sidebar), not a
+  returned summary. See the fan-out criteria in `parallel-agent-orchestration.md`.
+
+**Single test at every boundary: can the context be *truly isolated*?** No → drop a
+gate. The tiers are **composable** — a subagent typically *runs* skills; "agent" is
+usually "isolated context + fixed tools that runs skills."
+
+The **phase-boundary** delegate/handoff/inline decision (`context-management.md`) and
+subagent tool-scoping (below) both apply this rule; this section is its single source
+of truth.
+
+## Skill Invocation Axis
+
+Every skill has an **invocation axis**:
+
+- **user-invoked** — a human triggers it (a slash command) to *orchestrate*
+  (`/grill-with-docs`, `/to-spec`, `/wayfinder`, `/implement-from-spec`, …).
+- **model-invoked** — a reusable *discipline* other skills pull in mid-run
+  (`grilling`, `tdd`, `build-verify`, `domain-modeling`, `codebase-design`,
+  `writing-for-agents`, `commit-messages`, `cicd-conventions`).
+
+**Rule: a user-invoked skill may invoke model-invoked skills, but must NEVER invoke
+another user-invoked skill _inline in the same context window_.** Chaining
+orchestrators inline collapses two jobs into one window and destroys the human-in-loop
+review the split exists to protect.
+
+The escape hatch is a **gate crossing** (per the three-gate rule above): to hand work
+to another user-invoked skill, dispatch it to a **subagent** (Gate 2) or a **sibling
+session** (Gate 3) — a separate context window — not inline. A **narrative pointer**
+("when this is done, run `/to-spec`") is not an invocation and is always fine; it is
+the human's cue to start the next skill, not this skill running it.
+
+## Subagent Tool Scoping (Hard Rule)
+
+**A subagent's tool scope must match its declared job.** A read-only subagent
+holds only read-only tools; only a subagent whose stated job is to write may hold
+write tools, and never write tools that can reach a protected branch.
+
+This is the Gate-2 "hard tool/permission boundary" principle made concrete: the
+strongest place to enforce a boundary is the server, not the model's good behaviour.
+Prefer, in order:
+
+1. **Server-side read-only mode** where the MCP server supports it (e.g. the official
+   `github/github-mcp-server` with `GITHUB_READ_ONLY=1` — a strict filter that
+   overrides all other config).
+2. **Exhaustive tool blocklist** covering every write/mutate tool the server exposes
+   when no read-only switch exists. A blocklist that misses one write tool is a hole —
+   enumerate the server's full tool list and disable every writer, not just the obvious
+   ones.
+
+When adding or editing a subagent: read the MCP server's full tool
+list, classify each tool read vs write, and confirm the agent's allowed tools leave
+zero write paths unless writing is its job. Verify by inspecting the resulting tool
+surface, not by trusting the prompt to behave.
+
+Why this rule exists: a read-only research subagent once committed a file directly to
+`origin/main` through an unrestricted GitHub MCP server whose blocklist omitted one
+write tool (`create_or_update_file`).
+
+### The `shell` escape hatch and git-guard
+
+A blocklist only constrains an MCP server's named tools. An agent that holds a
+general-purpose `shell` tool can reach `git`, cloud CLIs, and `rm`
+directly, so a "never push to main" line in its prompt is a *request*,
+not a boundary — exactly the thing to distrust. Where an agent genuinely needs `shell`
+(running tests, debugging CI) and it cannot be swapped for a narrow tool, back the
+prompt rule with a **git-layer boundary**: the **git-guard** hooks (see
+`portable/git-guard`, installed as a global `core.hooksPath`) refuse direct
+pushes/commits to `main`/`master`/`develop`/`qa` and all force-pushes, for every repo
+and every actor — human or agent — because git runs the hook regardless of who typed
+the command. The human override is `GIT_GUARD_ALLOW=1`, documented for rare manual
+interventions and never given to an agent. Where the tooling supports it, also scope
+`shell` to an allow-list of commands and scope file writes to an allow-list of paths.
+Prefer removing `shell` entirely (a read-only reviewer needs none) when an agent does
+not truly need it; use git-guard and tool-scoping as defence-in-depth when it does.
+
 ## Error Recovery (Hard Rule)
 
 **When something fails, STOP and THINK before acting.** Do not enter a fix loop.
