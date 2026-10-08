@@ -39,6 +39,7 @@ SKILL_CATEGORIES=(
   [security-audit]="upkeep"
   [dependency-check]="upkeep"
   [qa-build]="upkeep"
+  [retro]="upkeep"
   [wizard]="upkeep"
   # Reference
   [domain-modeling]="reference"
@@ -77,6 +78,7 @@ SKILL_DESCRIPTIONS=(
   [security-audit]="Check code and deps for vulnerabilities"
   [dependency-check]="Evaluate whether to add a package"
   [qa-build]="Push to QA branch for staging build (git push-qa)"
+  [retro]="Retrospective on a session transcript → environment improvements"
   [wizard]="Generate a guided, resumable operator walkthrough for human-only steps"
   [domain-modeling]="Maintain CONTEXT.md glossary + ADRs"
   [codebase-design]="Deep modules vocabulary"
