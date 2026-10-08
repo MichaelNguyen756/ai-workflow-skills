@@ -77,6 +77,7 @@ Installs 5 passive instruction files into `.github/instructions/`:
 | `/resolving-merge-conflicts` | Hunk-by-hunk conflict resolution |
 | `/security-audit` | Full security scan checklist |
 | `/dependency-check` | Evaluate packages before adding |
+| `/retro` | Retrospective on a session transcript → environment improvements |
 | `/qa-build` | Push to QA branch for staging |
 
 ### Reference (invoked by other skills)
