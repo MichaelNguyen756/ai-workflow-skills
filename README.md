@@ -176,6 +176,11 @@ After installing, adapt to your team:
 
 This workflow is heavily based on [Matt Pocock's Skills](https://github.com/mattpocock/skills) ([aihero.dev/skills](https://www.aihero.dev/skills)). The main flow, rounds-based grilling, vertical-slice tickets, wayfinder, and writing-for-agents are all adapted from his work. MIT licensed.
 
+Additional skills are adapted from two other MIT-licensed collections:
+
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) — `constraint-driven-development`, `source-driven-development`, and `deprecation-and-migration` are adapted from it, and the fresh-context doubt step in `grilling` draws on its `doubt-driven-development`.
+- [cursor/pstack](https://github.com/cursor/plugins/tree/main/pstack) by [@poteto](https://x.com/poteto) — the `principles` library and the "attack the premise" step in `task-routing` are adapted from its principle set.
+
 ## License
 
 MIT
