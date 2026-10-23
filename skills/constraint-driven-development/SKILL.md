@@ -271,3 +271,8 @@ the next person who hits it.
 - A code-review skill — how to review; this skill decides what the review enforces
 - A build-verify skill — the post-change loop the fast checks run in
 - A TDD skill — the suite coverage constraints measure
+
+## Adapted from
+
+[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT), trimmed to a
+tool-agnostic core so each dimension maps to whatever the project already runs.

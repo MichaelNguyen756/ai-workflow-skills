@@ -204,3 +204,7 @@ concrete migration plan. It can't stay in limbo.
 - A ticket-breakdown skill — sequences expand/contract as blocked batches
 - An implement-from-spec skill — each migration phase as a thin vertical slice
 - A debugging skill — when a migration surfaces a behavior difference
+
+## Adapted from
+
+[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT).

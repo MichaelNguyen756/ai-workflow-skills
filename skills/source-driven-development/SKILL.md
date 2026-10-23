@@ -154,3 +154,7 @@ Honesty about what you couldn't verify beats false confidence.
 - A dependency-check skill — evaluating a package before adding it
 - A debugging skill — when a documented pattern still misbehaves
 - A code-review skill — the browser-support check uses the same compat sources
+
+## Adapted from
+
+[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT).
